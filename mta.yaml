@@ -1,0 +1,71 @@
+_schema-version: "3.2"
+ID: principalPropagationDemo
+version: 0.0.1
+modules:
+- name: principalpropagationdemo-approuter
+  type: approuter.nodejs
+  path: principalpropagationdemo-approuter
+  requires:
+  - name: principalPropagationDemo_html_repo_runtime
+  - name: uaa_principalPropagationDemo
+  - name: dest_principalPropagationDemo
+  - name: conn_principalPropagationDemo
+  parameters:
+    disk-quota: 256M
+    memory: 256M
+- name: principalPropagationDemo_ui_deployer
+  type: com.sap.application.content
+  path: .
+  requires:
+  - name: principalPropagationDemo_html_repo_host
+    parameters:
+      content-target: true
+  build-parameters:
+    build-result: resources
+    requires:
+    - artifacts:
+      - HTML5Module-content.zip
+      name: HTML5Module
+      target-path: resources/
+- name: HTML5Module
+  type: html5
+  path: HTML5Module
+  build-parameters:
+  
+    builder: custom
+    commands:
+    - npm run build
+    supported-platforms: []
+resources:
+- name: principalPropagationDemo_html_repo_runtime
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-runtime
+- name: principalPropagationDemo_html_repo_host
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: html5-apps-repo
+    service-plan: app-host
+- name: uaa_principalPropagationDemo
+  type: org.cloudfoundry.managed-service
+  parameters:
+    path: ./xs-security.json
+    service: xsuaa
+    service-name: principalPropagationDemo-xsuaa-service
+    service-plan: application
+- name: conn_principalPropagationDemo
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: connectivity
+    service-plan: lite
+- name: dest_principalPropagationDemo
+  type: org.cloudfoundry.managed-service
+  parameters:
+    service: destination
+    service-plan: lite
+build-parameters:
+  before-all:
+  - builder: custom
+    commands:
+    - npm install
